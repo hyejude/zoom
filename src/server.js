@@ -1,5 +1,6 @@
 import express from "express";
 import http from "http";
+import { parse } from "path";
 import WebSocket from "ws";
 
 const app = express();
@@ -20,16 +21,30 @@ const wss = new WebSocket.Server({ server });
 // function handleConnection(socket) {
 //     console.log(socket)
 // }
+
+// 연결된 connection .add()
+const sockets = [];
+
 wss.on("connection", (socket) => {
+    // chrome 연결 될 때 chrome을 add, socket 추가
+    sockets.push(socket);
+    socket["nickname"] = "Anon";
     // msg 보내기
     console.log("Connencted to Browser ✅");
     socket.on("close", () => {
         console.log("Disconnected from the Browser ❌")
     })
-    socket.on("message", message => {
-        console.log(message.toString('utf8'));
+    socket.on("message", (msg) => {
+        const message = JSON.parse(msg);
+        switch (message.type) {
+            case "new_message":
+                sockets.forEach(aSocket =>
+                    aSocket.send(`${socket.nickname}: ${message.payload}`)
+                );
+            case "nickname":
+                socket["nickname"] = message.payload;
+        }
     })
-    socket.send("hello!");
 });
 
 server.listen(3000, handleListen);
