@@ -1,50 +1,26 @@
-const messageList = document.querySelector("ul");
-const nickForm = document.querySelector("#nick");
-const messageForm = document.querySelector("#message");
+const socket = io();
 
-// socket in app.js : Connection from server
-const socket = new WebSocket(`ws://${window.location.host}`);
+const welcome = document.getElementById("welcome");
+const form = welcome.querySelector("form");
+const room = document.getElementById("room");
 
-// json.stringify func.
-function makeMessage(type, payload) {
-    const msg = { type, payload };
-    return JSON.stringify(msg);
+room.hidden = true;
+
+function showRoom() {
+    welcome.hidden = true;
+    room.hidden = false;
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName}`;
 }
 
-// hello send msg 받기
-socket.addEventListener("open", () => {
-    console.log("Connencted to Server ✅");
-});
+let roomName;
 
-socket.addEventListener("message", (message) => {
-    const li = document.createElement('li');
-    li.innerText = message.data;
-    messageList.append(li);
-});
-
-socket.addEventListener("close", () => {
-    console.log("Disconnencted to Server ❌");
-});
-
-// setTimeout(() => {
-//     socket.send("hello from the browser!");
-// }, 10000)
-
-function handleSubmit(event) {
+function handleRoomSubmit(event) {
     event.preventDefault();
-    const input = messageForm.querySelector("input");
-    socket.send(makeMessage("new_message", input.value));
-    const li = document.createElement("li");
-    li.innerText = `You: ${input.value}`;
-    messageList.append(li)
+    const input = form.querySelector("input");
+    socket.emit("enter_room", input.value, showRoom);
+    roomName = input.value;
     input.value = "";
 }
 
-function handleNickSubmit(event) {
-    event.preventDefault();
-    const input = nickForm.querySelector("input");
-    socket.send(makeMessage("nickname", input.value));
-}
-
-messageForm.addEventListener("submit", handleSubmit);
-nickForm.addEventListener("submit", handleNickSubmit);  
+form.addEventListener("submit", handleRoomSubmit);
