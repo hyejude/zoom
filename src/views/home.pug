@@ -10,5 +10,11 @@ html(lang="en")
     header 
         h1 Noom
     main 
+        div#myStream
+            video#myFace(autoplay, playinline, width="400", height="40")
+            button#mute Mute
+            button#camera Turn Camera Off
+            select#cameras
+                option(value="device") Face Camera
     script(src="/socket.io/socket.io.js")
     script(src="/public/js/app.js")
